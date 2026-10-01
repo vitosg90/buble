@@ -25,6 +25,8 @@ public final class BubbleManager {
     private static final float BASE_SCALE = 0.025f;   // как у ников над головой
     private static final double BASE_RADIUS = 2.0;     // блоков от игрока
     private static final int FULL_BRIGHT = 0xF000F0;
+    private static final double FADE_START_DIST = 24.0;  // статичные облачка гаснут при отдалении
+    private static final double MAX_STATIC_DIST = 30.0;
 
     public static BubbleManager get() {
         return INSTANCE;
@@ -34,14 +36,16 @@ public final class BubbleManager {
         final Component text;
         final long created;
         final int slot;
+        final Vec3 anchor; // null = следует за игроком
         List<FormattedCharSequence> lines;
         int maxWidth;
         int heightPx;
 
-        Bubble(Component text, long created, int slot) {
+        Bubble(Component text, long created, int slot, Vec3 anchor) {
             this.text = text;
             this.created = created;
             this.slot = slot;
+            this.anchor = anchor;
         }
     }
 
@@ -77,7 +81,28 @@ public final class BubbleManager {
             slot = oldest.slot;
             bubbles.remove(oldest);
         }
-        bubbles.add(new Bubble(text, System.currentTimeMillis(), slot));
+        Vec3 anchor = null;
+        var mc = Minecraft.getInstance();
+        if (!c.followPlayer && mc.player != null) {
+            // Статичный режим: запоминаем место перед игроком в момент получения сообщения.
+            Vec3 eye = mc.player.getEyePosition(1.0f);
+            Vec3 look = mc.player.getViewVector(1.0f);
+            double hx = look.x;
+            double hz = look.z;
+            double hl = Math.sqrt(hx * hx + hz * hz);
+            if (hl < 1e-4) {
+                hx = 0;
+                hz = 1;
+            } else {
+                hx /= hl;
+                hz /= hl;
+            }
+            double lateral = ((slot % 2) * 2 - 1) * 1.0;
+            double dy = -0.3 + (slot % 6) * 0.55;
+            double dist = BASE_RADIUS * c.radiusPercent / 100.0 + 0.5;
+            anchor = eye.add(hx * dist + (-hz) * lateral, dy, hz * dist + hx * lateral);
+        }
+        bubbles.add(new Bubble(text, System.currentTimeMillis(), slot, anchor));
     }
 
     public void clear() {
@@ -96,6 +121,7 @@ public final class BubbleManager {
 
     /** Место облачка в мире: кольцо вокруг глаз игрока, по три высоты. */
     private Vec3 worldPos(Bubble b, Vec3 eye, BubbleConfig c) {
+        if (b.anchor != null) return b.anchor;
         double angle = 2 * Math.PI * b.slot / c.maxBubbles;
         double r = BASE_RADIUS * c.radiusPercent / 100.0;
         double dy = -0.2 + (b.slot % 3) * 0.45;
@@ -157,6 +183,8 @@ public final class BubbleManager {
         float pt = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         Vec3 eye = player.getEyePosition(pt);
         Vec3 cam = ctx.levelState().cameraRenderState.pos;
+        bubbles.removeIf(b -> b.anchor != null && b.anchor.distanceToSqr(eye) > MAX_STATIC_DIST * MAX_STATIC_DIST);
+        if (bubbles.isEmpty()) return;
         for (Bubble b : bubbles) ensureLines(b, font);
         Bubble aimed = findAimed(mc, pt);
 
@@ -169,10 +197,16 @@ public final class BubbleManager {
         for (Bubble b : bubbles) {
             long age = now - b.created;
             float fade = age > life - FADE_MS ? Math.max(0f, (life - age) / (float) FADE_MS) : 1f;
+            Vec3 p = worldPos(b, eye, c);
+            if (b.anchor != null) {
+                double d = b.anchor.distanceTo(eye);
+                if (d > FADE_START_DIST) {
+                    fade *= (float) Math.max(0.0, (MAX_STATIC_DIST - d) / (MAX_STATIC_DIST - FADE_START_DIST));
+                }
+            }
             int a = (int) (255 * fade * c.opacityPercent / 100f);
             if (a < 8) continue;
 
-            Vec3 p = worldPos(b, eye, c);
             double dx = cam.x - p.x;
             double dy = cam.y - p.y;
             double dz = cam.z - p.z;

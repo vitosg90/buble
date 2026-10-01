@@ -8,5 +8,8 @@
   "chatbubbles.option.max": "Max bubbles: %s",
   "chatbubbles.option.scale": "Size: %s%%",
   "chatbubbles.option.opacity": "Opacity: %s%%",
-  "chatbubbles.option.radius": "Distance from player: %s%%"
+  "chatbubbles.option.radius": "Distance from player: %s%%",
+  "chatbubbles.option.follow": "Mode: %s",
+  "chatbubbles.mode.follow": "follow player",
+  "chatbubbles.mode.static": "stay in place"
 }

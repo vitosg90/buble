@@ -25,13 +25,15 @@ public class SettingsScreen extends Screen {
         int w = 220;
         int x = this.width / 2 - w / 2;
         int step = 24;
-        int y = Math.max(28, (this.height - 8 * step) / 2);
+        int y = Math.max(24, (this.height - 9 * step) / 2);
 
         addRenderableWidget(toggle(x, y, w, "chatbubbles.option.enabled", () -> c.enabled, v -> c.enabled = v));
         y += step;
+        addRenderableWidget(modeButton(x, y, w, c));
+        y += step;
         addRenderableWidget(toggle(x, y, w, "chatbubbles.option.system", () -> c.showSystemMessages, v -> c.showSystemMessages = v));
         y += step;
-        addRenderableWidget(new IntSlider(x, y, w, "chatbubbles.option.lifetime", 1, 60, c.lifetimeSeconds, v -> c.lifetimeSeconds = v));
+        addRenderableWidget(new IntSlider(x, y, w, "chatbubbles.option.lifetime", 1, 120, c.lifetimeSeconds, v -> c.lifetimeSeconds = v));
         y += step;
         addRenderableWidget(new IntSlider(x, y, w, "chatbubbles.option.max", 1, 12, c.maxBubbles, v -> c.maxBubbles = v));
         y += step;
@@ -51,6 +53,18 @@ public class SettingsScreen extends Screen {
             set.accept(now);
             b.setMessage(toggleLabel(key, now));
         }).bounds(x, y, w, 20).build();
+    }
+
+    private Button modeButton(int x, int y, int w, BubbleConfig c) {
+        return Button.builder(modeLabel(c.followPlayer), b -> {
+            c.followPlayer = !c.followPlayer;
+            b.setMessage(modeLabel(c.followPlayer));
+        }).bounds(x, y, w, 20).build();
+    }
+
+    private static Component modeLabel(boolean follow) {
+        return Component.translatable("chatbubbles.option.follow",
+                Component.translatable(follow ? "chatbubbles.mode.follow" : "chatbubbles.mode.static"));
     }
 
     private static Component toggleLabel(String key, boolean on) {

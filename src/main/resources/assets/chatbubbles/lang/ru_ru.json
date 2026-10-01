@@ -8,5 +8,8 @@
   "chatbubbles.option.max": "Макс. облачков: %s",
   "chatbubbles.option.scale": "Размер: %s%%",
   "chatbubbles.option.opacity": "Прозрачность: %s%%",
-  "chatbubbles.option.radius": "Расстояние от игрока: %s%%"
+  "chatbubbles.option.radius": "Расстояние от игрока: %s%%",
+  "chatbubbles.option.follow": "Режим: %s",
+  "chatbubbles.mode.follow": "следовать за игроком",
+  "chatbubbles.mode.static": "оставаться на месте"
 }

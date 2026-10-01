@@ -16,6 +16,8 @@ public class BubbleConfig {
 
     public boolean enabled = true;
     public boolean showSystemMessages = true;
+    /** true: облачка ходят за игроком; false: остаются на месте, где появились. */
+    public boolean followPlayer = false;
     public int lifetimeSeconds = 10;
     public int maxBubbles = 8;
     public int scalePercent = 100;
@@ -56,7 +58,7 @@ public class BubbleConfig {
     }
 
     private void clamp() {
-        lifetimeSeconds = Math.max(1, Math.min(60, lifetimeSeconds));
+        lifetimeSeconds = Math.max(1, Math.min(120, lifetimeSeconds));
         maxBubbles = Math.max(1, Math.min(12, maxBubbles));
         scalePercent = Math.max(50, Math.min(200, scalePercent));
         opacityPercent = Math.max(20, Math.min(100, opacityPercent));
