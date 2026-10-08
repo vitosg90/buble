@@ -122,7 +122,7 @@ public final class BubbleManager {
     /** Место облачка в мире: кольцо вокруг глаз игрока, по три высоты. */
     private Vec3 worldPos(Bubble b, Vec3 eye, BubbleConfig c) {
         if (b.anchor != null) return b.anchor;
-        double angle = 2 * Math.PI * b.slot / c.maxBubbles;
+        double angle = 2 * Math.PI * (double) b.slot / c.maxBubbles;
         double r = BASE_RADIUS * c.radiusPercent / 100.0;
         double dy = -0.2 + (b.slot % 3) * 0.45;
         return eye.add(Math.cos(angle) * r, dy, Math.sin(angle) * r);
@@ -159,7 +159,7 @@ public final class BubbleManager {
      * и не доходит до игры (не бьёшь и не ломаешь блок).
      */
     public void tryDismissAimed(Minecraft mc) {
-        if (mc.player == null || mc.gui.screen() != null || bubbles.isEmpty()) return;
+        if (mc.player == null || mc.screen != null || bubbles.isEmpty()) return;
         float pt = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         Bubble aimed = findAimed(mc, pt);
         if (aimed == null) return;
@@ -167,8 +167,10 @@ public final class BubbleManager {
         var attack = mc.options.keyAttack;
         boolean clicked = false;
         while (attack.consumeClick()) clicked = true;
-        attack.setDown(false);
-        if (clicked) bubbles.remove(aimed);
+        if (clicked) {
+            attack.setDown(false);
+            bubbles.remove(aimed);
+        }
     }
 
     /** Отправляет облачка на отрисовку в мире. */

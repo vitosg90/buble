@@ -81,7 +81,7 @@ public class SettingsScreen extends Screen {
     @Override
     public void onClose() {
         BubbleConfig.save();
-        this.minecraft.gui.setScreen(parent);
+        this.minecraft.setScreen(parent);
     }
 
     /** Ползунок с целым значением. */

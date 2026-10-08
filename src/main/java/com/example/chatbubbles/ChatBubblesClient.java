@@ -41,8 +41,8 @@ public class ChatBubblesClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (SETTINGS_KEY.consumeClick()) {
-                if (client.player != null && client.gui.screen() == null) {
-                    client.gui.setScreen(new SettingsScreen(null));
+                if (client.player != null && client.screen == null) {
+                    client.setScreen(new SettingsScreen(null));
                 }
             }
         });
